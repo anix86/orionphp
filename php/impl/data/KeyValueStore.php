@@ -21,11 +21,10 @@ class KeyValueStore {
 	 * 
 	 * @param unknown_type $path
 	 * @param unknown_type $key
-	 * @param unknown_type $mysql
 	 * @return map
 	 */
 	public function getPath($path, $key) {
-		if (empty($key)) {
+		if (!empty($key)) {
 			$queryStr = "select p.key, p.value from ".$this->table." p where p.path=? and p.key=?";
 			$stmt = $this->mysqli->prepare($queryStr);
 			$stmt->bind_param("ss", $path, $key);
@@ -61,37 +60,35 @@ class KeyValueStore {
 	 * 
 	 * @param prefsPath
 	 * @param key
-	 * @param mysql
 	 * @return boolean, false if failed, true if succeeded
 	 */
-	public function put($prefsPath, $filter, $prefsToPut) {
-		if (empty($prefsToPut)) {
-			error_log("KeyValueStore.put($prefsPath,$filter,$prefsToPut)#1: Empty prefToPut");
+	public function put($path, $filter, $prefsMap) {
+		if (empty($prefsMap)) {
+			error_log("KeyValueStore.put($path,$filter,$prefsMap)#1: Empty prefToPut");
 			return false;
 		}
 		
-		$queryStr = "insert into ".$this->table." (path,".$this->table.".key,value) values (?,?,?)";
+		$delete = $this->mysqli->prepare("delete from ".$this->table." where path=? and ".$this->table.".key=?");
+		$insert = $this->mysqli->prepare("insert into ".$this->table." (path,".$this->table.".key,value) values (?,?,?)");
 		if (! empty($filter)) {
-			$keyValue  = $prefsToPut[$filter];
+			$keyValue  = $prefsMap[$filter];
 			if (empty($keyValue)) {
-				error_log("KeyValueStore.put($prefsPath,$filter,$prefsToPut)#2: Empty keyValue");
+				error_log("KeyValueStore.put($path,$filter,$prefsMap)#2: Empty keyValue");
 				return false;
 			}
-			$queryStr .= "(\"".$prefsPath."\",\"".$filter."\",\"".$keyValue."\")";
+			$delete->bind_param("ss", $path, $filter);
+			$delete->execute();
+			$insert->bind_param("sss", $path, $filter, $keyValue);
+			$insert->execute();
 		} else {
-			$isFirst = true;
-			foreach ($prefsToPut as $pkey => $pvalue) {
-				$queryStr .= ($isFirst) ? "" : ", ";
-				$queryStr .= "(\"".$prefsPath."\",\"".$pkey."\",\"".$pvalue."\")";
-				$isFirst = false;
+			foreach ($prefsMap as $pkey => $pvalue) {
+				$delete->bind_param("ss", $path, $pkey);
+				$delete->execute();
+				$insert->bind_param("sss", $path, $pkey, $pvalue);
+				$insert->execute();
 			}
 		}
 		
-		if ($this->debug) {
-			error_log($queryStr);
-		}
-		
-		$qry = mysql_query($queryStr) or die(mysql_error()); // error
 		return true;
 	}
 	
@@ -102,18 +99,20 @@ class KeyValueStore {
 	 * @param key
 	 * @return boolean always true
 	 */
-	public function delete($prefsPath, $key) {
+	public function delete($path, $key) {
 		if (empty($key)) {
-			$queryStr = "delete from ".$this->table." where path = \"" . $prefsPath. "\"";
+			$queryStr = "delete from ".$this->table." where path = ?";
+			$delete = $this->mysqli->prepare($queryStr);
+			$delete->bind_param("s", $path);
+			$delete->execute();
+			
+			
 		} else {
-			$queryStr = "delete from ".$this->table." where path = \"" . $prefsPath. "\" and prefs.key=\"".$key."\"";
+			$queryStr = "delete from ".$this->table." where path = ? and prefs.key= ?";
+			$delete = $this->mysqli->prepare($queryStr);
+			$delete->bind_param("ss", $path, $key);
+			$delete->execute();
 		}
-		
-		if ($this->debug) {
-			error_log($queryStr);
-		}
-		
-		$qry = mysql_query($queryStr) or die(mysql_error()); // error
 		
 		return true;
 	}
