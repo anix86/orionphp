@@ -1,4 +1,7 @@
 <?php 
+/**
+ * Copyright (c) 2010 jacek.pospychala@gmail.com
+ */
 
 /**
  * http://wiki.eclipse.org/Orion/Server_API/Preference_API
@@ -9,9 +12,13 @@
 
 include 'init.php';
 include 'impl/data/KeyValueStore.php';
+include 'impl/data/TreeStore.php';
+include 'impl/User.php';
 
 $key = $_GET["key"];
-$p = new KeyValueStore($mysqli, "prefs");
+$store = new TreeStore($mysql);
+$user = new User($store);
+$p = new KeyValueStore($mysqli, $user->getId(), "prefs");
 
 switch ($requestMethod) {
 	case "GET":

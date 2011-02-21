@@ -1,4 +1,7 @@
 <?php
+/**
+ * Copyright (c) 2010 jacek.pospychala@gmail.com
+ */
 
 class Store {
 	

@@ -1,14 +1,21 @@
 <?php
+/**
+ * Copyright (c) 2010 jacek.pospychala@gmail.com
+ */
 
-include 'init.php';
-include 'impl/data/TreeStore.php';
-include 'impl/data/Store.php';
-include 'impl/Workspace.php';
-include 'impl/OrionResponseBuilder.php';
+include_once 'init.php';
+include_once 'impl/data/TreeStore.php';
+include_once 'impl/data/Store.php';
+include_once 'impl/User.php';
+include_once 'impl/Workspace.php';
+include_once 'impl/OrionResponseBuilder.php';
 
 $id = $path;
-$ws = new Workspace($mysql);
-$orb = new OrionResponseBuilder($mysql);
+
+$store = new TreeStore($mysql);
+$user = new User($store);
+$ws = new Workspace($store);
+$orb = new OrionResponseBuilder($store);
 
 switch ($requestMethod) {
 			
@@ -34,7 +41,8 @@ switch ($requestMethod) {
 		
 	case "GET":
 		if (empty($id)) {
-			$response = $orb->createWorkspacesResponse();
+			$wsData = $ws->getWorkspaces($user);
+			$response = $orb->createWorkspacesResponse($user, $wsData);
 		} else {
 			$ctx = $ws->store->getProperties($id);
 			if ($ws->isWorkspace($ctx)) {
@@ -67,7 +75,7 @@ switch ($requestMethod) {
 		}
 		
 		if (empty($id)) {
-			$newId = $ws->createWorkspace($name);
+			$newId = $ws->createWorkspace($user, $name);
 			$newctx = $ws->store->getProperties($newId);
 			$response = $orb->createWorkspaceResponse($newId, $newctx);
 		} else {
@@ -86,7 +94,8 @@ switch ($requestMethod) {
 				} else {
 					$newId = $ws->createEmptyFile($id, $name);
 					$newctx = $ws->store->getProperties($newId);
-					$response = $orb->createFileResponse($newId, $newctx);
+					$orb->createFileResponse($newId, $newctx, ""); // prints multipart
+					return;
 				}
 			}
 		}

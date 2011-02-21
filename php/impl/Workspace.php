@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2010 jacek.pospychala@gmail.com
+ */
+
+require_once 'data/TreeStore.php';
+require_once 'impl/User.php';
 
 class Workspace {
 	
@@ -7,22 +13,35 @@ class Workspace {
 	 */
 	public $store;
 	
-	public function Workspace($mysql) {
-		$this->store = new TreeStore($mysql);
+	public function Workspace($store) {
+		$this->store = $store;
 	}
 	
 	/**
 	 * 
-	 * 
+	 * @param User $user
 	 * @param $name
 	 * @return null, if workspace not found
 	 */
-	public function createWorkspace($name) {
+	public function createWorkspace($user, $name) {
 		$map = array(
 			"Name" => $name,
 			"Workspace" => "true");
 		
-		return $this->store->addChild(null, $map);
+		return $this->store->addChild($user->getId(), $map);
+	}
+	
+	/**
+	 * @param User $user
+	 */
+	public function getWorkspaces($user) {
+		$data = $this->store->getChildren($user->getId());
+		if (empty ($data)) {
+			$this->createWorkspace($user, "workspace");
+			$data = $this->store->getChildren($user->getId());
+		}
+		
+		return $data;
 	}
 	
 	/**

@@ -1,6 +1,7 @@
 <?php
-
-echo "AHAAA";
+/**
+ * Copyright (c) 2010 jacek.pospychala@gmail.com
+ */
 
 include 'KeyValueStore.php';
 

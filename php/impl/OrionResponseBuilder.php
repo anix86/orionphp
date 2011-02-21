@@ -1,4 +1,7 @@
 <?php
+/**
+ * Copyright (c) 2010 jacek.pospychala@gmail.com
+ */
 
 class OrionResponseBuilder {
 	/**
@@ -6,18 +9,22 @@ class OrionResponseBuilder {
 	 */
 	public $store;
 	
-	public function OrionResponseBuilder($mysql) {
-		$this->store = new TreeStore($mysql);
+	public function OrionResponseBuilder($store) {
+		$this->store = $store;
 	}
 	
-	public function createWorkspacesResponse() {
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param User $user
+	 */
+	public function createWorkspacesResponse($user, $workspacesMap) {
 		$resp = array();
-		$resp["UserName"] = "jacek";
-		$resp["Id"] = "89123123"; // user id
+		$resp["UserName"] = $user->getName();
+		$resp["Id"] = $user->getId();
 
 		$workspaces = array();
-		$data = $this->store->getChildren(null);
-		foreach ($data as $id => $map) {
+		foreach ($workspacesMap as $id => $map) {
 			$workspaces[] = array(
 				"Id" => $id,
 				"Location" => "http://" . $_SERVER["HTTP_HOST"]."/workspace/$id",
@@ -149,16 +156,16 @@ class OrionResponseBuilder {
 		return $body;
 	}
 	
-	public function createFileResponse($id, $data, $body) {
-		$meta = $this->createFileMetaResponse($id, $data);
-		$body = $this->createFileBodyResponse($id);
+	public function createFileResponse($id, $data, $bodyResp) {
+		$metaResp = $this->createFileMetaResponse($id, $data);
+		$bodyResp = $this->createFileBodyResponse($bodyResp);
 		
 		header("Content-Type: multipart/related; boundary=\"BOUNDARY\"");
 		echo "--BOUNDARY\r\n";
 		echo "Content-Type: application/json\r\n\r\n";
-		echo json_encode($meta)."\r\n";
+		echo json_encode($metaResp)."\r\n";
 		echo "--BOUNDARY\r\n";
 		echo "Content-Type: text/plain\r\n\r\n";
-		echo $body;
+		echo $bodyResp;
 	}
 }

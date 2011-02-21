@@ -1,4 +1,7 @@
 <?php
+/**
+ * Copyright (c) 2010 jacek.pospychala@gmail.com
+ */
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
 $path = $_SERVER["REDIRECT_SUBPATH"];

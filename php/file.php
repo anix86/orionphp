@@ -1,4 +1,7 @@
 <?php
+/**
+ * Copyright (c) 2010 jacek.pospychala@gmail.com
+ */
 
 include 'init.php';
 include 'impl/data/Store.php';
@@ -7,8 +10,11 @@ include 'impl/OrionResponseBuilder.php';
 include 'impl/File.php';
 
 $id = $path;
-$ws = new Workspace($mysql);
-$orb = new OrionResponseBuilder($mysql);
+
+$store = new TreeStore($mysql);
+$user = new User($store);
+$ws = new Workspace($store);
+$orb = new OrionResponseBuilder($store);
 
 switch ($requestMethod) {
 			
