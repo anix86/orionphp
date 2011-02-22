@@ -4,7 +4,7 @@
  */
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
-$path = $_SERVER["REDIRECT_SUBPATH"];
+$path = $_GET["rewriteP1"];
 
 $requestBody = @file_get_contents('php://input');
 if (! empty($requestBody)) {
