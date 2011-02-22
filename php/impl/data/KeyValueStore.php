@@ -20,6 +20,11 @@ class KeyValueStore {
 		$this->table = $storeName;
 		$this->mysqli = $mysqli;
 		$this->userid = $userid;
+		$this->initStore();
+	}
+	
+	private function initStore() {
+		$this->mysqli->query("CREATE TABLE IF NOT EXISTS `".$this->table."` (  `userid` int(11) NOT NULL,  `path` varchar(255) NOT NULL,  `key` varchar(255) NOT NULL,  `value` varchar(255) NOT NULL)");
 	}
 	
 	/**

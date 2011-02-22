@@ -17,6 +17,13 @@ class TreeStore {
 	
 	public function TreeStore($mysql) {
 		$this->mysql = $mysql;
+		$this->initStore();
+	}
+	
+	private function initStore() {
+		mysql_query("CREATE TABLE IF NOT EXISTS `children` (`parent` int(11) DEFAULT NULL,`child` int(11) NOT NULL,KEY `parent` (`parent`) )", $this->mysql);
+		mysql_query("CREATE TABLE IF NOT EXISTS `ids` (`id` int(11) NOT NULL AUTO_INCREMENT,PRIMARY KEY (`id`))", $this->mysql);
+		mysql_query("CREATE TABLE IF NOT EXISTS `meta` (  `id` int(11) NOT NULL,  `key` varchar(255) NOT NULL,  `value` varchar(255) NOT NULL,  KEY `id` (`id`))", $this->mysql); 
 	}
 	
 	public function getChildren($id) {

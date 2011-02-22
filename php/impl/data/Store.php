@@ -11,6 +11,11 @@ class Store {
 	
 	public function Store($mysql) {
 		$this->mysql = $mysql;
+		$this->initStore();
+	}
+	
+	private function initStore() {
+		mysql_query("CREATE TABLE IF NOT EXISTS `blobs` (  `id` int(11) NOT NULL,  `value` blob NOT NULL)", $this->mysql);
 	}
 	
 	/**
