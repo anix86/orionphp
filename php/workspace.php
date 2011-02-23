@@ -94,13 +94,12 @@ switch ($requestMethod) {
 				} else {
 					$newId = $ws->createEmptyFile($id, $name);
 					$newctx = $ws->store->getProperties($newId);
-					$orb->createFileResponse($newId, $newctx, ""); // prints multipart
-					return;
+					$response = $orb->createFileMetaResponse($newId, $newctx, "");
 				}
 			}
 		}
 
-		if (!empty($response)) {
+		if (!empty($response) && isset($response["Location"])) {
 			header("Location: ".$response["Location"]);
 		}
 		
