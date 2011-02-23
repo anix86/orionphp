@@ -1,0 +1,16 @@
+.breadcrumb {
+	font-size: 1.1em;
+	color: #316ac5;
+	text-decoration: none;
+	margin-right: 4px;
+	margin-left: 4px;
+}
+
+.breadcrumb:hover {
+	font-size: 1.1em;
+	color: #05386B;
+	text-decoration: underline;
+	margin-right: 4px;
+	margin-left: 4px;
+}
+

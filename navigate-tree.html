@@ -1,0 +1,127 @@
+<!doctype html>
+<html style="height: 100%" lang="en-us">
+    <head>
+		<meta name="copyright" content="Copyright (c) IBM Corporation and others 2010." >
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=8">
+    	<title>Eclipse Web Navigator</title>    
+	<script type="text/javascript">
+		var djConfig = {
+			isDebug:false,
+			modulePaths: {'widgets': '/js/widgets'},
+			parseOnLoad:true
+		};
+	</script>
+    <script type="text/javascript" src="/org.dojotoolkit/dojo/dojo.js.uncompressed.js"></script>
+    <script type="text/javascript">
+    dojo.require("dijit.Menu");
+    dojo.require("dijit.MenuItem");
+    dojo.require("dijit.Dialog");
+    dojo.require("dijit.form.CheckBox");
+    dojo.require("widgets.NewItemDialog");
+ 	</script>    	
+	<style type="text/css">
+		@import "/org.dojotoolkit/dojo/resources/dojo.css";
+		@import "/org.dojotoolkit/dijit/themes/soria/soria.css";
+		@import "/org.dojotoolkit/dijit/themes/soria/Tree.css";
+		@import "/org.dojotoolkit/dijit/themes/soria/layout/BorderContainer.css";
+		@import "/org.dojotoolkit/dijit/themes/soria/form/Common.css";
+		@import "/org.dojotoolkit/dijit/themes/soria/form/Button.css";
+	    @import "/ide.css";
+	    @import "/breadcrumbs.css";
+	</style>
+	
+   </head>
+
+    <body style="height: 100%" class="soria">
+    
+	<script type="text/javascript" src="/openajax/release/all/OpenAjaxManagedHub-all.js"></script>
+	
+	<!-- Extension Registry -->
+	<script src="js/registry.js"></script>
+	
+	<!--Authentication -->
+	<script type="text/javascript" src="js/auth.js"></script>
+
+    <!-- Eclipse Application Services -->
+ 	<script src="js/util.js"></script>
+ 	<script src="js/commands.js"></script>
+ 	<script src="js/dialogs.js"></script>
+ 	<script src="js/input.js"></script>
+ 	<script src="js/log.js"></script>
+ 	<script src="js/preferences.js"></script>
+ 	<script src="js/saveable.js"></script>
+ 	<script src="js/selection.js"></script>
+ 	<script src="js/status.js"></script>
+ 	<script src="js/users.js"></script>
+     
+ 	<!-- File Operations Client -->
+  	<script src="js/fileClient.js"></script>
+      
+ 	<!-- Breadcrumbs -->
+  	<script src="js/breadcrumbs.js"></script>
+      
+	<!-- Tree -->
+	<script src="js/explorer-tree.js"></script>
+	
+	<!-- Favorites List -->
+	<script src="js/favorites.js"></script>
+
+	<!--Search -->
+	<script src="js/searchClient.js"></script>
+
+
+    <div dojoType="dijit.layout.BorderContainer" design="headline" liveSplitters="true" persist="true" gutters="false" style="width: 100%; height: 100%;">
+		<div class="toolbar" id="toolbar" dojoType="dijit.layout.ContentPane" region="top">
+			<div style="float: left;">
+				<table><tr>
+		    		<td><img class="toolbarLabel" src="/images/Eclipse-Logo.gif" alt="Eclipse Logo" align="top"></td>
+					<td><b class="statuspane" id="statusPane"></td>
+				</tr></table>
+			</div>
+			<div id="eclipseWebToolbar" class="innerToolbar" style="float: right;">
+				<button dojoType="dijit.form.Button" class="button" id="switchView">
+					<img src="/images/flatLayout.gif" alt="Grid View" title="Grid View">
+				</button>
+				
+				<button dojoType="dijit.form.Button" type="button" id="newProjectButton">New Project
+				</button>
+				
+				<button dojoType="dijit.form.Button" type="button" id="linkProjectButton">Link Project
+				</button>
+				
+				<input id="search" align="center" type="search" class="searchbox">
+				<button dojoType="dijit.form.Button" type="button" id="searchTextButton">Search
+				</button>
+				
+				<button dojoType="dijit.form.Button" type="button" id="searchNamesButton">Search Names
+				</button>
+			</div>
+		</div>
+		
+		<div class="paneScrolled" style="margin-left: 8px; width: 20%" id="leftPane" dojoType="dijit.layout.ContentPane" region="leading" splitter="true">
+				<div id="favorites">
+				<h2>Favorites</h2>
+				<div  id="favoriteProgress">Loading favorites...</div>
+				</div>
+		</div>
+
+		<div class="paneScrolled" style="margin-left: 8px;" id="rightPane" dojoType="dijit.layout.ContentPane" region="center" splitter="false">
+			<div id="explorer-tree">
+				<!-- Breadcrumbs, tree content go here -->
+			</div>
+			<ul dojoType="dijit.Menu" id="treeContextMenu" style="display: none;">
+				<li dojoType="dijit.MenuItem" id="makeFavorite">Make Favorite</li>
+				<li dojoType="dijit.MenuItem" id="deleteFiles">Delete</li>
+				<li dojoType="dijit.PopupMenuItem" id="NewFileFolderMenu"><span>New</span>
+					<ul dojoType="dijit.Menu" id="NewItemsSubmenu">
+						<li dojoType="dijit.MenuItem" id="newFolder">Folder</li>
+						<li dojoType="dijit.MenuItem" id="newFile">File</li>
+					</ul></li>
+			</ul>
+		</div>
+	</div>
+
+	<script src="js/navigate-tree/navigate-tree.js"></script>
+</body>
+</html>
