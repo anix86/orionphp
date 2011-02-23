@@ -1,0 +1,6 @@
+RewriteEngine On
+
+RewriteRule ^file/(.*) php/file.php?rewriteP1=$1 [nosubreq,last,qsappend]
+RewriteRule ^prefs/(.*) php/prefs.php?rewriteP1=$1 [nosubreq,last,qsappend]
+RewriteRule ^workspace/(.*) php/workspace.php?rewriteP1=$1 [nosubreq,last,qsappend]
+RewriteRule ^workspace$ php/workspace.php?rewriteP1=$1 [nosubreq,last,qsappend]
