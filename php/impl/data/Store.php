@@ -1,104 +1,88 @@
 <?php
 /**
- * Copyright (c) 2010 jacek.pospychala@gmail.com
+ * Copyright (c) 2011 jacek.pospychala@gmail.com
  */
 
 class Store {
 	
-	private $mysql;
+	/**
+	 * @var mysqli
+	 */
+	private $mysqli;
 	
 	private $debug = false;
 	
-	public function Store($mysql) {
-		$this->mysql = $mysql;
+	public function Store($mysqli) {
+		$this->mysqli = $mysqli;
 		$this->initStore();
 	}
 	
 	private function initStore() {
-		mysql_query("CREATE TABLE IF NOT EXISTS `blobs` (  `id` int(11) NOT NULL,  `value` blob NOT NULL)", $this->mysql);
+		$this->mysqli->query("CREATE TABLE IF NOT EXISTS `blobs` (  `id` int(11) NOT NULL,  `value` blob NOT NULL)");
 	}
 	
 	/**
-	 * Returns first value for given path
+	 * Get entry value
 	 *
-	 * @param unknown_type $path
-	 * @param unknown_type $key
-	 * @param unknown_type $mysql
 	 * @return string
 	 */
 	public function get($id) {
-		$queryStr = "select value from blobs p where id=$id";
-		
-		if ($this->debug) {
-			echo $queryStr;
+		$stmt = $this->mysqli->prepare("select value from blobs p where id=?");
+		$stmt->bind_param("i", $id);
+		if (!$stmt->execute()) {
+			return false;
 		}
 		
-		$qry = mysql_query($queryStr, $this->mysql) or die(mysql_error());
-		$count = mysql_num_rows($qry);
-		
-		if ($count == 0) {
+		$stmt->bind_result($value);
+		if (!$stmt->fetch()) {
 			return null;
 		}
+		$stmt->close();
 		
-		$row = mysql_fetch_assoc($qry);
-		return $row["value"];
+		return $value;
+	}
+	
+	public function set($id, $value) {
+		if (!$this->update($id, $value)) {
+			$this->add($id, $value);
+		}
 	}
 	
 	/**
-	 * Sets preferences
+	 * Add entry in store
 	 * 
-	 * @param prefsPath
-	 * @param key
-	 * @param mysql
 	 * @return boolean, false if failed, true if succeeded
 	 */
-	public function add($id, $value) {
-		$queryStr = "insert into blobs (id,value) values ($id,\"$value\")";
-		
-		if ($this->debug) {
-			echo $queryStr;
-		}
-		
-		$qry = mysql_query($queryStr, $this->mysql) or die(mysql_error()); // error
-		return true;
+	private function add($id, $value) {
+		$stmt = $this->mysqli->prepare("insert into blobs (id,value) values (?,?)");
+		$stmt->bind_param("is", $id, $value);
+		return $stmt->execute();
 	}
 	
 	/**
+	 * Update entry in store
 	 * 
-	 * Enter description here ...
-	 * @param unknown_type $path
-	 * @param unknown_type $value
-	 * @param unknown_type $mysql
 	 * @return true, if record was updated, false if it was not found
 	 */
-	public function update($id, $value) {
-		$queryStr = "update blobs p set value=\"".$value."\" where id=$id";
-		if ($this->debug) {
-			echo $queryStr;
+	private function update($id, $value) {
+		$stmt = $this->mysqli->prepare("update blobs p set value=? where id=?");
+		$stmt->bind_param("si", $value, $id);
+		if (!$stmt->execute()) {
+			return false;
 		}
 		
-		$qry = mysql_query($queryStr, $this->mysql) or die(mysql_error()); // error
-		return mysql_affected_rows($qry) == 1;
+		return $stmt->affected_rows > 0;
 	}
 	
 	/**
-	 * Deletes preferences 
+	 * Delete entry 
 	 * 
-	 * @param prefsPath
-	 * @param key
-	 * @param mysql
 	 * @return boolean always true
 	 */
 	public function delete($id) {
-		$queryStr = "delete from blobs where id=$id";
-		
-		if ($this->debug) {
-			echo $queryStr;
-		}
-		
-		$qry = mysql_query($queryStr, $this->mysql) or die(mysql_error()); // error
-		
-		return true;
+		$stmt = $this->mysqli->prepare("delete from blobs where id=?");
+		$stmt->bind_param("i", $id);
+		return $stmt->execute();
 	}
 }
 

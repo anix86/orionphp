@@ -1,42 +1,48 @@
 <?php
 /**
- * Copyright (c) 2010 jacek.pospychala@gmail.com
+ * Copyright (c) 2011 jacek.pospychala@gmail.com
  */
 
-/**
- * 
- * TODO switch to mysqli
- *
- */
 
 class TreeStore {
 
-	private $mysql;
+	/**
+	 * @var mysqli
+	 */
+	private $mysqli;
 	
 	private $debug = false;
 	
-	public function TreeStore($mysql) {
-		$this->mysql = $mysql;
+	public function TreeStore($mysqli) {
+		$this->mysqli = $mysqli;
 		$this->initStore();
 	}
 	
 	private function initStore() {
-		mysql_query("CREATE TABLE IF NOT EXISTS `children` (`parent` int(11) DEFAULT NULL,`child` int(11) NOT NULL,KEY `parent` (`parent`) )", $this->mysql);
-		mysql_query("CREATE TABLE IF NOT EXISTS `ids` (`id` int(11) NOT NULL AUTO_INCREMENT,PRIMARY KEY (`id`))", $this->mysql);
-		mysql_query("CREATE TABLE IF NOT EXISTS `meta` (  `id` int(11) NOT NULL,  `key` varchar(255) NOT NULL,  `value` varchar(255) NOT NULL,  KEY `id` (`id`))", $this->mysql); 
+		$this->mysqli->query("CREATE TABLE IF NOT EXISTS `children` (`parent` int(11) DEFAULT NULL,`child` int(11) NOT NULL,KEY `parent` (`parent`) )", $this->mysql);
+		$this->mysqli->query("CREATE TABLE IF NOT EXISTS `ids` (`id` int(11) NOT NULL AUTO_INCREMENT,PRIMARY KEY (`id`))", $this->mysql);
+		$this->mysqli->query("CREATE TABLE IF NOT EXISTS `meta` (  `id` int(11) NOT NULL,  `key` varchar(255) NOT NULL,  `value` varchar(255) NOT NULL,  KEY `id` (`id`))", $this->mysql); 
 	}
 	
 	public function getChildren($id) {
-		$queryStr = "select c.child, m.key, m.value from children c, meta m where c.parent ".(empty($id)? "is null" : "=$id")." and c.child=m.id";
-		if ($this->debug) {
-			echo $queryStr;
+		if (empty($id)) {
+			$queryStr = "select c.child, m.key, m.value from children c, meta m where c.parent is null and c.child=m.id";
+			$stmt = $this->mysqli->prepare($queryStr);
+		} else {
+			$queryStr = "select c.child, m.key, m.value from children c, meta m where c.parent = ? and c.child=m.id";
+			$stmt = $this->mysqli->prepare($queryStr);
+			$stmt->bind_param("i", $id);
 		}
-		$qry = mysql_query($queryStr, $this->mysql);
-		$c = mysql_num_rows($qry);
+		
+		if (!$stmt->execute()) {
+			return false;
+		}
+		
+		$stmt->bind_result($childId, $rowKey, $rowValue);
+		
 		$children = array();
-		for ($i = 0; $i < $c; $i++) {
-			$row = mysql_fetch_assoc($qry);
-			$children[$row["child"]][$row["key"]] = $row["value"];
+		while ($stmt->fetch()) {
+			$children[$childId][$rowKey] = $rowValue;
 		}
 		
 		return $children;
@@ -53,16 +59,17 @@ class TreeStore {
 	 * @return childId
 	 */
 	public function addChild($parent, $map) {
-		$qry = mysql_query("insert into ids values (null)", $this->mysql);
-		$id = mysql_insert_id();
+		$this->mysqli->query("insert into ids values (null)");
+		$id = $this->mysqli->insert_id;
+		
+		$stmt = $this->mysqli->prepare("insert into children (parent, child) values (?,?)");
 		if (empty($parent)) {
-			$parent = "null";
+			$parent = null;
 		}
- 		$queryStr = "insert into children (parent, child) values ($parent,$id)";
-		if ($this->debug) {
-			echo $queryStr;
+		$stmt->bind_param("ii", $parent, $id);
+		if (!$stmt->execute()) {
+			return false;
 		}
-		$qry = mysql_query($queryStr, $this->mysql);
 		
 		$this->setProperties($id, $map);
 		
@@ -70,17 +77,43 @@ class TreeStore {
 	}
 	
 	public function delete($id) {
-		mysql_query("delete from children where child=$id", $this->mysql);
+		$stmt = $this->mysqli->prepare("delete from children where child=?");
+		$stmt->bind_param("i", $id);
+		if (!$stmt->execute()) {
+			return false;
+		}
+		
 		$this->deleteProperties($id);
 	}
 	
 	public function deleteChild($parent, $child) {
-		mysql_query("delete from children where parent ".(empty($parent)? "is null" : "=$parent")." and child=$child", $this->mysql);
+		if (empty($parent)) {
+			$stmt = $this->mysqli->prepare("delete from children where parent is null and child=?");
+			$stmt->bind_param("i", $child);
+		} else {
+			$stmt = $this->mysqli->prepare("delete from children where parent = ?  and child=?");
+			$stmt->bind_param("ii", $parent, $child);
+		}
+		
+		if (!$stmt->execute()) {
+			return false;
+		}
+		
 		$this->deleteProperties($child);
 	}
 	
 	public function deleteChildren($parent) {
-		mysql_query("delete from children where parent ".(empty($parent)? "is null" : "=$parent"), $this->mysql);
+		if (empty($parent)) {
+			$stmt = $this->mysqli->prepare("delete from children where parent is null");
+		} else {
+			$stmt = $this->mysqli->prepare("delete from children where parent = ?");
+			$stmt->bind_param("i", $parent);
+		}
+		
+		if (!$stmt->execute()) {
+			return false;
+		}
+		
 		$this->deleteProperties($parent);
 		// TODO leaves some dangling properties for removed children
 	}
@@ -90,33 +123,33 @@ class TreeStore {
 	}
 	
 	public function getProperties($id) {
-		$qry = mysql_query("select * from meta where id".(empty($id)? "is null" : "=$id"), $this->mysql);
-		$c = mysql_num_rows($qry);
+		if (empty($id)) {
+			$stmt = $this->mysqli->prepare("select meta.key, meta.value from meta where id is null");
+		} else {
+			$stmt = $this->mysqli->prepare("select meta.key, meta.value from meta where id = ?");
+			$stmt->bind_param("i", $id);
+		}
+		
+		if (!$stmt->execute()) {
+			return false;
+		}
+		
 		$props = array();
-		for ($i = 0; $i < $c; $i++) {
-			$row = mysql_fetch_assoc($qry);
-			$props[$row["key"]] = $row["value"];
+		$stmt->bind_result($rowKey, $rowValue);
+		while ($stmt->fetch()) {
+			$props[$rowKey] = $rowValue;
 		}
 		
 		return $props;
 	}
 	
 	public function setProperties($id, $map) {
-		$queryStr = "insert into meta (id,meta.key,value) values";
+		$stmt = $this->mysqli->prepare("insert into meta (id,meta.key,value) values (?,?,?)");
 		
-		$isFirst = true;
 		foreach ($map as $pkey => $pvalue) {
-			$queryStr .= ($isFirst) ? "" : ", ";
-			$queryStr .= "($id,\"$pkey\",\"$pvalue\")";
-			$isFirst = false;
+			$stmt->bind_param("iss", $id, $pkey, $pvalue);
+			$stmt->execute();
 		}
-		
-	
-		if ($this->debug) {
-			echo $queryStr;
-		}
-		
-		$qry = mysql_query($queryStr, $this->mysql);
 	}
 	
 	public function setProperty($id, $key, $value) {
@@ -124,13 +157,15 @@ class TreeStore {
 	}
 	
 	public function deleteProperties($id) {
-		$queryStr = "delete from meta where id=$id";
-		mysql_query($queryStr, $this->mysql);
+		$stmt = $this->mysqli->prepare("delete from meta where id=?");
+		$stmt->bind_param("i", $id);
+		return $stmt->execute();
 	}
 	
 	public function deleteProperty($id, $key) {
-		$queryStr = "delete from meta where id=$id and meta.key=\"$key\"";
-		mysql_query($queryStr, $this->mysql);
+		$stmt = $this->mysqli->prepare("delete from meta where id=? and meta.key=?");
+		$stmt->bind_param("is", $id, $key);
+		return $stmt->execute();
 	}
 	
 	public function updateProperties($id, $map) {
@@ -140,8 +175,9 @@ class TreeStore {
 	}
 	
 	public function updateProperty($id, $key, $value) {
-		$queryStr = "update table meta set value=\"$value\" where id=$id and meta.key=\"$key\"";
-		mysql_query($queryStr, $this->mysql);
+		$stmt = $this->mysqli->prepare("update table meta set value=? where id =? and meta.key=?");
+		$stmt->bind_param($value, $id, $key);
+		return $stmt->execute();
 	}
 }
 

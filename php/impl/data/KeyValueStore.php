@@ -38,10 +38,16 @@ class KeyValueStore {
 		if (!empty($key)) {
 			$queryStr = "select p.key, p.value from ".$this->table." p where userid = ".$this->userid." and p.path=? and p.key=?";
 			$stmt = $this->mysqli->prepare($queryStr);
+			if (!$stmt) {
+				error_log("KeyValueStore.getPath($path,$key) error 1:".$this->mysqli->error);
+			}
 			$stmt->bind_param("ss", $path, $key);
 		} else {
 			$queryStr = "select p.key, p.value from ".$this->table." p where userid = ".$this->userid." and p.path=?";
 			$stmt = $this->mysqli->prepare($queryStr);
+			if (!$stmt) {
+				error_log("KeyValueStore.getPath($path,$key) error 2:".$this->mysqli->error);
+			}
 			$stmt->bind_param("s", $path);
 		}
 		
