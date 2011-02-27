@@ -11,7 +11,7 @@ include 'impl/File.php';
 
 $id = $path;
 
-$store = new TreeStore($mysql);
+$store = new TreeStore($mysqli);
 $user = new User($store);
 $ws = new Workspace($store);
 $orb = new OrionResponseBuilder($store);
@@ -24,7 +24,7 @@ switch ($requestMethod) {
 			header($_SERVER["SERVER_PROTOCOL"] . " 404 File id missing");
 			return;
 		} else {
-			$file = new File($id, $mysql);
+			$file = new File($id, $mysqli);
 			$file->setContents($requestBody);
 			
 			$ctx = $ws->store->getProperties($id);
@@ -47,7 +47,7 @@ switch ($requestMethod) {
 			}
 			if (empty($parts) || is_string(strstr($parts, "body"))) {
 				$getBody = true;
-				$file = new File($id, $mysql);
+				$file = new File($id, $mysqli);
 				$body = $file->getContents();
 			}
 			

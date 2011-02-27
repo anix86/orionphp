@@ -11,10 +11,6 @@ if (! empty($requestBody)) {
 	$requestJson = json_decode($requestBody, true);
 }
 
-// db setup
-$mysql = mysql_connect("localhost:3306", "root", "");
-mysql_select_db("zendaurion", $mysql) or die(mysql_error()); // error
-
 $mysqli = new mysqli("localhost", "root", "", "zendaurion");
 if (mysqli_connect_errno()) {
     error_log("Connect failed: %s\n", mysqli_connect_error());

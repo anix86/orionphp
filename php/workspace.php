@@ -12,7 +12,7 @@ include_once 'impl/OrionResponseBuilder.php';
 
 $id = $path;
 
-$store = new TreeStore($mysql);
+$store = new TreeStore($mysqli);
 $user = new User($store);
 $ws = new Workspace($store);
 $orb = new OrionResponseBuilder($store);

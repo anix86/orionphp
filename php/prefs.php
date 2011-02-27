@@ -16,7 +16,7 @@ include 'impl/data/TreeStore.php';
 include 'impl/User.php';
 
 $key = $_GET["key"];
-$store = new TreeStore($mysql);
+$store = new TreeStore($mysqli);
 $user = new User($store);
 $p = new KeyValueStore($mysqli, $user->getId(), "prefs");
 
