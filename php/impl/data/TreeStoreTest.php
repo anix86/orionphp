@@ -10,13 +10,7 @@ class TreeStoreTest {
 	 */
 	private $store;
 	
-	public function TreeStoreTest() {
-		$mysqli = new mysqli("localhost", "root", "", "zendaurion");
-		if (mysqli_connect_errno()) {
-		    error_log("Connect failed: %s\n", mysqli_connect_error());
-		    return;
-		}
-		
+	public function TreeStoreTest($mysqli) {
 		$this->store = new TreeStore($mysqli);
 	}
 	
@@ -50,4 +44,4 @@ class TreeStoreTest {
 	}
 }
 
-TestUnit::test(new TreeStoreTest());
+TestUnit::test(new TreeStoreTest($mysqli));

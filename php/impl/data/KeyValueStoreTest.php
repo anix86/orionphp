@@ -15,12 +15,7 @@ class KeyValueStoreTest {
 	 */
 	private $store;
 	
-	function KeyValueStoreTest() {
-		$mysqli = new mysqli("localhost", "root", "", "zendaurion");
-		if (mysqli_connect_errno()) {
-		    error_log("Connect failed: %s\n", mysqli_connect_error());
-		    return;
-		}
+	function KeyValueStoreTest($mysqli) {
 		$this->store = new KeyValueStore($mysqli, 1, "prefs");
 	}
 	
@@ -59,5 +54,5 @@ class KeyValueStoreTest {
 	}
 }
 
-TestUnit::test(new KeyValueStoreTest());
+TestUnit::test(new KeyValueStoreTest($mysqli));
 

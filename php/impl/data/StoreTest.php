@@ -10,13 +10,7 @@ class StoreTest {
 	 */
 	private $store;
 	
-	public function StoreTest() {
-		$mysqli = new mysqli("localhost", "root", "", "zendaurion");
-		if (mysqli_connect_errno()) {
-		    error_log("Connect failed: %s\n", mysqli_connect_error());
-		    return;
-		}
-		
+	public function StoreTest($mysqli) {
 		$this->store = new Store($mysqli);
 	}
 	
@@ -45,4 +39,4 @@ class StoreTest {
 	}
 }
 
-TestUnit::test(new StoreTest());
+TestUnit::test(new StoreTest($mysqli));
