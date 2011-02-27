@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2010 jacek.pospychala@gmail.com
+ * Copyright (c) 2011 jacek.pospychala@gmail.com
  */
 
 class File {
@@ -9,22 +9,18 @@ class File {
 
 	public $id;
 	
-	public function File($id, $mysql) {
-		$this->fileStore = new Store($mysql);
+	public function File($id, $mysqli) {
+		$this->fileStore = new Store($mysqli);
 		$this->id = $id;
 	}
 	
 	public function setContents($value) {
-		$currValue = $this->fileStore->get($this->id);
-		if ($currValue == null) {
-			$this->fileStore->add($this->id, $value);
-		} else {
-			$this->fileStore->update($this->id, $value);
-		}
+		$this->fileStore->set($this->id, $value);
 	}
 	
 	public function delete() {
-		
+		$this->fileStore->delete($this->id);
+		// TODO delete also metadata
 	}
 	
 	public function getContents() {
