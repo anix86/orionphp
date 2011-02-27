@@ -66,7 +66,45 @@ switch ($requestMethod) {
 		break;
 
 		
-	case "POST":
+	case "POST": // create file
+		$name = $_SERVER["HTTP_SLUG"];
+		if (empty($name)) {
+			$name = $requestJson["Name"];
+		}
+		
+		if (empty($name)) {
+			header($_SERVER["SERVER_PROTOCOL"] . " 404 Name missing");
+			return;
+		}
+		
+		if (empty($id)) {
+			header($_SERVER["SERVER_PROTOCOL"] . " 404 Parent unknown");
+			return;
+		}
+		
+		$createDir = jsonBool($requestJson["Directory"]);
+				
+		if ($createDir) {
+			$newId = $ws->createDirectory($id, $name);
+			$newctx = $ws->store->getProperties($newId);
+			$response = $orb->createDirectoryResponse($newId, $newctx);
+		} else {
+			$newId = $ws->createEmptyFile($id, $name);
+			$newctx = $ws->store->getProperties($newId);
+			$response = $orb->createFileMetaResponse($newId, $newctx, "");
+		}
+		
+		if (empty($response)) {
+			header($_SERVER["SERVER_PROTOCOL"] . " 404 Failed to create");
+			return;
+		} 
+		
+		if (isset($response["Location"])) {
+			header("Location: ".$response["Location"]);
+		}
+		
+		header("Content-Type: application/json");
+		echo json_indent(json_encode($response));
 		
 		break;
 		
