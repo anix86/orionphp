@@ -1,7 +1,7 @@
 <?php
 
-include 'TestUnit.php';
-include 'Store.php';
+include_once 'TestUnit.php';
+include_once 'Store.php';
 
 class StoreTest {
 	

@@ -1,7 +1,7 @@
 <?php
 
-include 'TreeStore.php';
-include 'TestUnit.php';
+include_once 'TreeStore.php';
+include_once 'TestUnit.php';
 
 class TreeStoreTest {
 	

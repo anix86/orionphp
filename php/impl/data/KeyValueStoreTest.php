@@ -3,8 +3,8 @@
  * Copyright (c) 2010 jacek.pospychala@gmail.com
  */
 
-include 'TestUnit.php';
-include 'KeyValueStore.php';
+include_once 'TestUnit.php';
+include_once 'KeyValueStore.php';
 
 
 
