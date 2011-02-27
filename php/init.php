@@ -11,7 +11,7 @@ if (! empty($requestBody)) {
 	$requestJson = json_decode($requestBody, true);
 }
 
-$mysqli = new mysqli("4954.mysql.win.pl", "ad4954_nimini", "z8m77VV2", "bd4954_nimini");
+$mysqli = new mysqli("localhost", "root", "", "zendaurion");
 if (mysqli_connect_errno()) {
     error_log("Connect failed: %s\n", mysqli_connect_error());
     return;
